@@ -1,0 +1,24 @@
+/* Add your CSS styles here */
+
+.rootlayout {
+    display: flex;
+}
+
+#items {
+    margin-right: 20px;
+}
+
+.dropzone {
+    border: 1px solid #ccc;
+    padding: 10px;
+    width: 300px;
+    height: 400px;
+}
+
+.draggable {
+    cursor: pointer;
+    margin-bottom: 10px;
+    padding: 5px;
+    border: 1px solid #000;
+    background-color: #f0f0f0;
+}
