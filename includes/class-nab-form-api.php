@@ -1,15 +1,17 @@
 <?php
 
 if (!defined('ABSPATH')) {
-    exit; // Exit if accessed directly
+    exit; //Exit if accessed directly
 }
 
 class Nab_Form_API {
 
+    //Constructor to hook into the REST API initialization action.
     public function __construct() {
         add_action('rest_api_init', array($this, 'register_routes'));
     }
 
+    //Register the REST API routes for saving and getting forms.
     public function register_routes() {
         register_rest_route('nab-form-builder/v1', '/save-form', array(
             'methods' => 'POST',
@@ -24,10 +26,12 @@ class Nab_Form_API {
         ));
     }
 
+    //Checks if the user has proper permissions
     public function permissions_check() {
         return current_user_can('manage_options');
     }
 
+    //function to save form
     public function save_form(WP_REST_Request $request) {
         global $wpdb;
         $table_name = $wpdb->prefix . 'nab_form_builder';
@@ -50,6 +54,7 @@ class Nab_Form_API {
         return new WP_REST_Response('Form saved successfully', 200);
     }
 
+    //function that gets all forms
     public function get_forms(WP_REST_Request $request) {
         global $wpdb;
         $table_name = $wpdb->prefix . 'nab_form_builder';

@@ -17,6 +17,7 @@ class Nab_Form_Builder
         $this->define_hooks();
     }
 
+    //Hooks for WordPress functions
     private function define_hooks()
     {
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
@@ -25,13 +26,12 @@ class Nab_Form_Builder
         add_action('admin_post_nab_save_form', array($this, 'handle_form_submission'));
         add_action('admin_post_nab_delete_form', array($this, 'handle_form_deletion'));
 
-        // Add AJAX actions
         add_action('wp_ajax_nab_get_form_names', array($this, 'handle_form_getFormNames'));
         add_action('wp_ajax_nab_get_form', array($this, 'get_form'));
         add_action('wp_ajax_nab_get_form_names', array($this, 'handle_form_getFormNames'));
-
     }
 
+    //Enqueue admin styles and scripts
     public function enqueue_admin_scripts()
     {
         wp_enqueue_style('nab_form_builder_styles', plugin_dir_url(__FILE__) . '../assets/css/styles.css');
@@ -42,6 +42,7 @@ class Nab_Form_Builder
         ));
     }
 
+    //Add the plugin's menu and submenu pages in the admin dashboard
     public function add_admin_menu()
     {
         add_menu_page(
@@ -63,16 +64,19 @@ class Nab_Form_Builder
         );
     }
 
+    //Function to display the main admin page
     public function display_admin_page()
     {
         require_once plugin_dir_path(__FILE__) . '../templates/form_template.php';
     }
 
+    //Function to display the saved forms page
     public function display_saved_forms_page()
     {
         require_once plugin_dir_path(dirname(__FILE__)) . '/templates/saved_forms_template.php';
     }
 
+    //Create the custom database table on plugin activation
     public function create_custom_table()
     {
         global $wpdb;
@@ -90,6 +94,7 @@ class Nab_Form_Builder
         dbDelta($sql);
     }
 
+    //Handle form submission and save it to the database
     public function handle_form_submission()
     {
         if (!current_user_can('manage_options')) {
@@ -116,39 +121,43 @@ class Nab_Form_Builder
         exit;
     }
 
-    public function handle_form_getFormNames() {
+    //Handle AJAX request to get form names
+    public function handle_form_getFormNames()
+    {
         if (!current_user_can('manage_options')) {
             return;
         }
-    
+
         global $wpdb;
         $table_name = $wpdb->prefix . 'nab_form_builder';
-    
+
         $page_number = isset($_GET['page_number']) ? intval($_GET['page_number']) : 1;
         $page_size = isset($_GET['page_size']) ? intval($_GET['page_size']) : 10;
         $offset = ($page_number - 1) * $page_size;
-    
+
         $form_names = $wpdb->get_results($wpdb->prepare(
             "SELECT id, form_name FROM $table_name LIMIT %d OFFSET %d",
-            $page_size, $offset
+            $page_size,
+            $offset
         ), ARRAY_A);
-    
+
         if (empty($form_names)) {
             wp_send_json_error('No forms found');
         } else {
             wp_send_json_success($form_names);
         }
     }
-    
 
-    public function get_form($formID = null, $formName = null) {
+    //Get a specific form based on ID or name
+    public function get_form($formID = null, $formName = null)
+    {
         if (!current_user_can('manage_options')) {
             return;
         }
-    
+
         global $wpdb;
         $table_name = $wpdb->prefix . 'nab_form_builder';
-    
+
         if ($formID) {
             $form = $wpdb->get_row($wpdb->prepare("SELECT * FROM $table_name WHERE id = %d", $formID), ARRAY_A);
         } elseif ($formName) {
@@ -156,32 +165,33 @@ class Nab_Form_Builder
         } else {
             wp_send_json_error('No form ID or name provided');
         }
-    
+
         if (empty($form)) {
             wp_send_json_error('Form not found');
         } else {
             wp_send_json_success($form);
         }
     }
-    
-    public function handle_form_getFormNames() {
+
+    //Handle AJAX request to get form names with pagination
+    public function handle_form_getFormNames()
+    {
         if (!current_user_can('manage_options')) {
             wp_send_json_error('Permission denied');
         }
-    
+
         global $wpdb;
         $table_name = $wpdb->prefix . 'nab_form_builder';
         $forms = $wpdb->get_results("SELECT form_name FROM $table_name", ARRAY_A);
-    
+
         if (empty($forms)) {
             wp_send_json_error('No forms found');
         } else {
             wp_send_json_success($forms);
         }
     }
-    
 
-
+    //Handle form deletion
     public function handle_form_deletion()
     {
         if (!current_user_can('manage_options')) {
